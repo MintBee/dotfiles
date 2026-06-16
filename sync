@@ -1,0 +1,73 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+DOTFILES=${DOTFILES:-${0:A:h}}
+TARGET_HOME=${HOME:?HOME is required}
+
+DEFAULT_TARGETS=(nvim tmux zsh claude agents)
+
+typeset -A MANAGED_PATHS
+MANAGED_PATHS=(
+  nvim ".config/nvim"
+  tmux ".tmux.conf"
+  zsh ".zshrc"
+  claude ".claude/skills"
+  agents ".agents/skills"
+)
+
+targets=()
+if (( $# > 0 )); then
+  targets=("$@")
+elif [[ -n "${STOW_FOLDERS:-}" ]]; then
+  targets=(${=STOW_FOLDERS})
+else
+  targets=("${DEFAULT_TARGETS[@]}")
+fi
+
+command -v rsync >/dev/null 2>&1 || {
+  print -u2 "sync requires rsync"
+  exit 1
+}
+
+for target in "${targets[@]}"; do
+  rel=${MANAGED_PATHS[$target]-}
+  if [[ -z "$rel" ]]; then
+    print -u2 "unknown target: $target"
+    exit 1
+  fi
+
+  src="$TARGET_HOME/$rel"
+  dest="$DOTFILES/$target/$rel"
+
+  if [[ ! -e "$src" && ! -L "$src" ]]; then
+    print "skip $target: missing $src"
+    continue
+  fi
+
+  stage=$(mktemp -d)
+  staged="$stage/payload"
+
+  if [[ -d "$src" ]]; then
+    mkdir -p "$staged"
+    rsync -aL --delete \
+      --exclude ".git/" \
+      --exclude ".DS_Store" \
+      --exclude "*.swp" \
+      --exclude "*.swo" \
+      "$src/" "$staged/"
+  else
+    rsync -aL \
+      --exclude ".git/" \
+      --exclude ".DS_Store" \
+      --exclude "*.swp" \
+      --exclude "*.swo" \
+      "$src" "$staged"
+  fi
+
+  rm -rf "$dest"
+  mkdir -p "${dest:h}"
+  mv "$staged" "$dest"
+  rm -rf "$stage"
+
+  print "synced $target"
+done

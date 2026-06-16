@@ -1,0 +1,92 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+DOTFILES=${DOTFILES:-${0:A:h}}
+TARGET_HOME=${HOME:?HOME is required}
+
+DEFAULT_TARGETS=(nvim tmux zsh claude agents)
+
+typeset -A MANAGED_PATHS
+MANAGED_PATHS=(
+  nvim ".config/nvim"
+  tmux ".tmux.conf"
+  zsh ".zshrc"
+  claude ".claude/skills"
+  agents ".agents/skills"
+)
+
+targets=()
+if (( $# > 0 )); then
+  targets=("$@")
+elif [[ -n "${STOW_FOLDERS:-}" ]]; then
+  targets=(${=STOW_FOLDERS})
+else
+  targets=("${DEFAULT_TARGETS[@]}")
+fi
+
+command -v stow >/dev/null 2>&1 || {
+  print -u2 "install requires GNU Stow"
+  exit 1
+}
+
+prepare_target() {
+  local target=$1
+  local rel=${MANAGED_PATHS[$target]}
+  local src="$DOTFILES/$target/$rel"
+  local dest="$TARGET_HOME/$rel"
+
+  if [[ ! -e "$src" && ! -L "$src" ]]; then
+    print -u2 "missing package path for $target: $src"
+    exit 1
+  fi
+
+  if [[ ! -e "$dest" && ! -L "$dest" ]]; then
+    return
+  fi
+
+  if [[ -L "$dest" ]]; then
+    return
+  fi
+
+  if [[ -f "$src" && -f "$dest" ]]; then
+    if cmp -s "$src" "$dest"; then
+      rm -f "$dest"
+      return
+    fi
+  elif [[ -d "$src" && -d "$dest" ]]; then
+    if diff -qr -x .git -x .DS_Store "$src" "$dest" >/dev/null; then
+      rm -rf "$dest"
+      return
+    fi
+  fi
+
+  print -u2 "conflict: $dest differs from $src"
+  print -u2 "run ./sync first if this machine's version should become the repo version"
+  exit 1
+}
+
+ensure_parent_dir() {
+  local target=$1
+  local rel=${MANAGED_PATHS[$target]}
+  local parent=${rel:h}
+
+  if [[ "$parent" != "." ]]; then
+    mkdir -p "$TARGET_HOME/$parent"
+  fi
+}
+
+cd "$DOTFILES"
+
+for target in "${targets[@]}"; do
+  rel=${MANAGED_PATHS[$target]-}
+  if [[ -z "$rel" ]]; then
+    print -u2 "unknown target: $target"
+    exit 1
+  fi
+
+  stow -D --target="$TARGET_HOME" "$target"
+  prepare_target "$target"
+  ensure_parent_dir "$target"
+  stow --target="$TARGET_HOME" "$target"
+  print "installed $target"
+done
