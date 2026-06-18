@@ -1,3 +1,21 @@
+# macOS metadata
 .DS_Store
+.CFUserTextEncoding
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.Trash
+.fseventsd
+.DocumentRevisions-V100
+.VolumeIcon.icns
+.localized
+.metadata_never_index
+.apdisk
+__MACOSX/
+
+# Editor swap files
 *.swp
 *.swo
