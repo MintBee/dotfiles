@@ -111,6 +111,7 @@ export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 # git
 autoload -Uz compinit && compinit
 
+# alias
 alias ll='ls -l'
 alias la='ls -a'
 alias cl='claude code'
@@ -118,6 +119,9 @@ alias cx='codex'
 alias typora="open -a typora"
 alias ty="open -a typora"
 alias vim="nvim"
+
+# fzf alias
+alias br='git checkout $(git branch --sort=-committerdate | fzf | sed "s/^[ *]*//")'
 
 # variable
 export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"

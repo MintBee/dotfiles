@@ -7,6 +7,8 @@ Small Stow-based dotfiles repo for:
 - zsh: `~/.zshrc`
 - Claude skills: `~/.claude/skills`
 - Agents skills: `~/.agents/skills`
+- ghostty
+- cmux
 
 ## Sync Local Config Into This Repo
 
