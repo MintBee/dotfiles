@@ -25,38 +25,36 @@ local function set_iterm2_profile(profile)
   io.stdout:flush()
 end
 
-local function apply_iterm2_solarized()
-  if not is_iterm2() then
-    return false, false
-  end
+local function clear_terminal_background()
+  vim.cmd("highlight Normal ctermbg=NONE guibg=NONE")
+  vim.cmd("highlight NormalNC ctermbg=NONE guibg=NONE")
+  vim.cmd("highlight SignColumn ctermbg=NONE guibg=NONE")
+  vim.cmd("highlight EndOfBuffer ctermbg=NONE guibg=NONE")
+end
 
+local function apply_terminal_solarized()
   local dark = macos_is_dark_mode()
+  local background = dark and "dark" or "light"
   local profile = dark and DARK_PROFILE or LIGHT_PROFILE
-  local changed = vim.g.iterm2_solarized_profile ~= profile
+  local changed = vim.g.terminal_solarized_background ~= background
 
   vim.opt.termguicolors = false
-  vim.opt.background = dark and "dark" or "light"
+  vim.opt.background = background
+  vim.g.terminal_solarized_background = background
 
-  if changed then
+  if is_iterm2() and vim.g.iterm2_solarized_profile ~= profile then
     set_iterm2_profile(profile)
     vim.g.iterm2_solarized_profile = profile
+    changed = true
   end
 
-  return true, changed
+  return changed
 end
 
 local function load_colorscheme()
-  local applied = apply_iterm2_solarized()
-
-  if applied then
-    vim.cmd.colorscheme("default")
-    vim.cmd("highlight Normal ctermbg=NONE guibg=NONE")
-    vim.cmd("highlight NormalNC ctermbg=NONE guibg=NONE")
-    vim.cmd("highlight SignColumn ctermbg=NONE guibg=NONE")
-    vim.cmd("highlight EndOfBuffer ctermbg=NONE guibg=NONE")
-  else
-    require("tokyonight").load()
-  end
+  apply_terminal_solarized()
+  vim.cmd.colorscheme("default")
+  clear_terminal_background()
 end
 
 return {
@@ -64,11 +62,9 @@ return {
     "LazyVim/LazyVim",
     init = function()
       vim.api.nvim_create_autocmd("FocusGained", {
-        group = vim.api.nvim_create_augroup("iterm2_solarized_profile", { clear = true }),
+        group = vim.api.nvim_create_augroup("terminal_solarized_profile", { clear = true }),
         callback = function()
-          local applied, changed = apply_iterm2_solarized()
-
-          if applied and changed then
+          if apply_terminal_solarized() then
             load_colorscheme()
           end
         end,
