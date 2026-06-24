@@ -8,6 +8,12 @@ description: Guide comment judgment while writing, editing, refactoring, reviewi
 
 Use comments to preserve design knowledge that code cannot express precisely. Treat comments as part of the abstraction boundary: they should reduce the reader's cognitive load and reveal obscure decisions, not narrate the syntax.
 
+## Modular Design
+
+We think of each module in two parts: an interface and an implementation. The interface consists of everything that a developer working in a different module must know in order to use the given module. Typically, the interface describes what the module does but not how it does it. The implementation consists of the code that carries out the promises made by the interface.
+
+Write comments to facilitate understanding of the module.
+
 ## Comment-First Design
 
 Before writing a non-trivial class, method, function, module, or complex block:
@@ -33,6 +39,8 @@ Favor comments for deep modules with a thin public surface and substantial imple
 Do not add a comment when it only translates nearby code into natural language, repeats the entity name, or describes implementation details the caller does not need.
 
 Avoid comments on trivial classes, obvious assignments, straightforward control flow, and code that should be simplified instead. If the comment says what the next line says, delete the comment or improve the code.
+
+Ousterhout, John K. . A Philosophy of Software Design, 2nd Edition (p. 20). (Function). Kindle Edition.
 
 ## Interface Comments
 
