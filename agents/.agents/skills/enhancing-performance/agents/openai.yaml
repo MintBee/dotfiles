@@ -1,0 +1,4 @@
+interface:
+  display_name: "Enhancing Performance"
+  short_description: "Benchmark, save evidence, compare patches"
+  default_prompt: "Use $enhancing-performance to improve this code path with saved benchmark results, diagnostic evidence, and guardrail metrics."

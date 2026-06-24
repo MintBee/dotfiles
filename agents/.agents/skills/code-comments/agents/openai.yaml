@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Comments"
+  short_description: "Comment guidance for code changes"
+  default_prompt: "Use $code-comments whenever writing or editing code."

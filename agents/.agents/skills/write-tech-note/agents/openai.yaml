@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write Tech Note"
+  short_description: "Draft structured technical problem notes"
+  default_prompt: "Use $write-tech-note to turn this problem and solution into a clear technical note."
